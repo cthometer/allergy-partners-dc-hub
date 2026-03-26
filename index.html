@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Allergy Partners DC Hub — Dashboard</title>
+  <style>
+    :root {
+      --brand: #2E75B6;
+      --brand-dark: #1B3A6B;
+      --brand-light: #EAF2FB;
+      --done: #107C10;
+      --done-bg: #DFF6DD;
+      --blocked: #C50F1F;
+      --blocked-bg: #FDE7E9;
+      --warn: #FF8C00;
+      --warn-bg: #FFF4CE;
+      --na: #767676;
+      --na-bg: #F3F2F1;
+      --border: #DEDEDE;
+      --text: #1B1B1B;
+      --muted: #605E5C;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --dark-bg: #0d1117;
+      --dark-surface: #161b22;
+      --dark-border: #30363d;
+      --dark-text: #e6edf3;
+      --dark-muted: #8b949e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--dark-bg);
+      color: var(--dark-text);
+      line-height: 1.5;
+    }
+
+    /* ── TOP NAV ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--dark-surface);
+      border-bottom: 1px solid var(--dark-border);
+      padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .nav-brand {
+      font-size: 14px; font-weight: 700; color: var(--dark-text);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .status-badge-nav {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 12px;
+      background: var(--brand);
+      color: white; font-size: 12px; font-weight: 600;
+    }
+    .nav-tabs {
+      display: flex; gap: 0; align-items: stretch;
+    }
+    .nav-tab {
+      padding: 0 16px; height: 56px;
+      display: flex; align-items: center;
+      color: var(--dark-muted);
+      cursor: pointer; font-size: 14px; font-weight: 500;
+      border: none; background: transparent;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-tab:hover { color: var(--dark-text); }
+    .nav-tab.active {
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      background: var(--dark-surface);
+      border-bottom: 1px solid var(--dark-border);
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .progress-bar {
+      flex: 1; height: 8px; background: var(--dark-border);
+      border-radius: 4px; overflow: hidden; margin-right: 16px;
+    }
+    .progress-fill {
+      height: 100%; background: var(--brand);
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .progress-label {
+      font-size: 12px; color: var(--dark-muted);
+      white-space: nowrap;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 1200px; margin: 0 auto; padding: 32px 20px;
+    }
+
+    /* ── PAGE TITLE ── */
+    .page-title {
+      margin-bottom: 24px;
+    }
+    .page-title h1 {
+      font-size: 28px; font-weight: 700; color: var(--dark-text);
+      margin-bottom: 4px;
+    }
+    .page-title p {
+      font-size: 14px; color: var(--dark-muted);
+    }
+
+    /* ── TABS (hidden by default) ── */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 16px; font-weight: 700; color: var(--dark-text);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── TABLES ── */
+    table {
+      width: 100%; border-collapse: collapse;
+      background: var(--dark-surface);
+      color: var(--dark-text);
+    }
+    th, td {
+      padding: 12px; text-align: left;
+      border-bottom: 1px solid var(--dark-border);
+      font-size: 13px;
+    }
+    th {
+      background: var(--dark-border);
+      font-weight: 700; color: var(--dark-text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(46,117,182,0.05); }
+
+    /* ── ALERT BOXES ── */
+    .alert-box {
+      padding: 16px; border-radius: var(--radius);
+      margin-bottom: 16px; border-left: 4px solid;
+      font-size: 13px; line-height: 1.6;
+    }
+    .alert-box.blocked {
+      background: var(--blocked-bg);
+      border-left-color: var(--blocked);
+      color: #7a1b24;
+    }
+    .alert-box.warn {
+      background: var(--warn-bg);
+      border-left-color: var(--warn);
+      color: #7a4500;
+    }
+    .alert-box.info {
+      background: var(--brand-light);
+      border-left-color: var(--brand);
+      color: #1B3A6B;
+    }
+    .alert-title {
+      font-weight: 700; margin-bottom: 8px;
+    }
+    .alert-box ul { margin-left: 20px; }
+    .alert-box li { margin-bottom: 4px; }
+
+    /* ── TIMELINE ── */
+    .timeline {
+      position: relative; padding-left: 40px;
+    }
+    .timeline-item {
+      position: relative; margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -36px; top: 3px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--brand);
+      border: 2px solid var(--dark-surface);
+      box-shadow: 0 0 0 2px var(--brand);
+    }
+    .timeline-item.highlight::before {
+      background: var(--warn);
+      box-shadow: 0 0 0 2px var(--warn);
+    }
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: -30px; top: 24px;
+      width: 2px; height: calc(100% + 8px);
+      background: var(--dark-border);
+    }
+    .timeline-item:last-child::after { display: none; }
+    .timeline-time {
+      font-size: 14px; font-weight: 700;
+      color: var(--brand); margin-bottom: 4px;
+    }
+    .timeline-title {
+      font-size: 14px; font-weight: 600; color: var(--dark-text);
+      margin-bottom: 4px;
+    }
+    .timeline-details {
+      font-size: 13px; color: var(--dark-muted);
+      margin-bottom: 4px;
+    }
+    .timeline-who {
+      font-size: 12px; color: var(--dark-muted); font-style: italic;
+    }
+
+    /* ── SECTION CARDS (CHECKLIST) ── */
+    .section-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 16px;
+      background: var(--dark-border);
+      cursor: pointer;
+      user-select: none;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--dark-border);
+    }
+    .section-header.phase1 { background: rgba(197, 15, 31, 0.15); }
+    .section-header.phase2 { background: rgba(46, 117, 182, 0.15); }
+    .section-header.phase3 { background: rgba(16, 124, 16, 0.15); }
+    .section-header.phase4 { background: rgba(107, 79, 171, 0.15); }
+    .section-header.info-section { background: rgba(118, 118, 118, 0.15); }
+    .section-title {
+      font-size: 14px; font-weight: 700; color: var(--dark-text);
+    }
+    .section-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 40px; height: 24px;
+      background: var(--dark-border); border-radius: 12px;
+      font-size: 11px; font-weight: 700; color: var(--dark-muted);
+      margin-right: 8px;
+    }
+    .section-chevron {
+      color: var(--dark-muted); font-size: 12px;
+      transition: transform 0.2s;
+    }
+    .section-collapsed .section-body { display: none; }
+    .section-collapsed .section-chevron { transform: rotate(-90deg); }
+
+    .section-body {
+      padding: 16px;
+    }
+
+    /* ── CHECK ITEMS ── */
+    .check-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px; border-radius: 5px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+      background: transparent;
+      color: var(--dark-text);
+      transition: background 0.15s;
+    }
+    .check-item[onclick]:hover {
+      background: rgba(46, 117, 182, 0.08);
+    }
+    .check-item.done {
+      background: rgba(16, 124, 16, 0.15);
+      color: var(--done);
+    }
+    .check-item.blocked {
+      background: var(--blocked-bg);
+      color: #7a1b24;
+      cursor: not-allowed;
+    }
+    .check-item.na {
+      background: var(--na-bg);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+    .check-box {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      border: 2px solid;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      background: var(--dark-surface);
+    }
+    .check-item.done .check-box {
+      border-color: var(--done);
+      background: var(--done);
+      color: white;
+    }
+    .check-item.blocked .check-box {
+      border-color: var(--blocked);
+      background: transparent;
+      color: var(--blocked);
+    }
+    .check-item.na .check-box {
+      border-color: var(--na);
+      background: transparent;
+      color: var(--na);
+    }
+    .check-item:not(.done):not(.blocked):not(.na) .check-box {
+      border-color: var(--dark-border);
+    }
+    .check-label {
+      flex: 1; font-size: 13px; line-height: 1.5;
+    }
+    .check-done .check-label { text-decoration: line-through; }
+    .check-note {
+      font-size: 12px; color: var(--dark-muted);
+      margin-top: 4px; font-style: italic;
+    }
+    .check-tag {
+      display: inline-block;
+      padding: 2px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 700;
+      margin-right: 6px; text-transform: uppercase;
+    }
+    .tag-done { background: var(--done); color: white; }
+    .tag-blocker { background: var(--blocked); color: white; }
+
+    /* ── NOTES & BLOCKERS PANEL ── */
+    .notes-panel {
+      background: var(--dark-surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 2px solid var(--warn);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .notes-panel-header {
+      background: var(--warn-bg);
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+      border-bottom: 1px solid #FFD980;
+    }
+    .notes-panel-title { font-size: 14px; font-weight: 700; color: #7A4500; }
+    .notes-save-indicator { font-size: 11px; color: var(--done); font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+    .notes-save-indicator.visible { opacity: 1; }
+    .notes-panel-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .notes-panel-body { grid-template-columns: 1fr; } }
+
+    .blockers-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dark-muted); margin-bottom: 8px; }
+    .blocker-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; min-height: 32px; }
+    .blocker-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: var(--blocked-bg); border-radius: 5px;
+      padding: 8px 10px; border-left: 3px solid var(--blocked);
+      font-size: 13px;
+    }
+    .blocker-item.resolved {
+      background: var(--done-bg); border-color: var(--done);
+      text-decoration: line-through; color: var(--muted);
+    }
+    .blocker-item-text { flex: 1; line-height: 1.4; color: #1B1B1B; }
+    .blocker-item.resolved .blocker-item-text { color: var(--muted); }
+    .blocker-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .blocker-btn {
+      border: none; border-radius: 3px; padding: 2px 7px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    .blocker-btn.resolve { background: var(--done); color: #fff; }
+    .blocker-btn.resolve.undo { background: var(--muted); }
+    .blocker-btn.remove { background: transparent; color: var(--muted); font-size: 14px; padding: 0 4px; }
+    .blocker-empty { font-size: 12px; color: var(--dark-muted); font-style: italic; padding: 4px 0; }
+    .add-blocker-row { display: flex; gap: 6px; }
+    .add-blocker-input {
+      flex: 1; border: 1px solid var(--dark-border); border-radius: 5px;
+      padding: 7px 10px; font-size: 13px; font-family: inherit;
+      outline: none; background: var(--dark-surface); color: var(--dark-text);
+    }
+    .add-blocker-input:focus { border-color: var(--brand); }
+    .add-blocker-btn {
+      background: var(--blocked); color: #fff; border: none;
+      border-radius: 5px; padding: 7px 12px; font-size: 12px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .add-blocker-btn:hover { opacity: 0.88; }
+
+    .notes-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dark-muted); margin-bottom: 8px; }
+    .notes-textarea {
+      width: 100%; min-height: 110px; border: 1px solid var(--dark-border);
+      border-radius: 5px; padding: 10px 12px; font-size: 13px;
+      font-family: inherit; line-height: 1.5; resize: vertical;
+      outline: none; color: var(--dark-text);
+      background: var(--dark-bg);
+    }
+    .notes-textarea:focus { border-color: var(--brand); }
+    .notes-meta { font-size: 11px; color: var(--dark-muted); margin-top: 5px; font-style: italic; }
+    .panel-chevron { color: var(--warn); font-size: 12px; transition: transform 0.2s; }
+    .notes-panel.collapsed .notes-panel-body { display: none; }
+    .notes-panel.collapsed .panel-chevron { transform: rotate(-90deg); }
+
+    /* ── QUICK LINKS (PILL BUTTONS) ── */
+    .quick-links {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .pill-btn {
+      display: inline-flex; align-items: center;
+      padding: 8px 12px; border-radius: 20px;
+      background: var(--brand);
+      color: white; text-decoration: none;
+      font-size: 12px; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .pill-btn:hover { opacity: 0.85; }
+
+    /* ── CODE BLOCKS (MONOSPACE) ── */
+    .code-block {
+      background: var(--dark-bg);
+      border: 1px solid var(--dark-border);
+      border-radius: 5px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #85C1FF;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    .code-label {
+      font-size: 11px; color: var(--dark-muted);
+      text-transform: uppercase; font-weight: 700;
+      margin-bottom: 8px; letter-spacing: 0.5px;
+    }
+
+    /* ── COPY BUTTON ── */
+    .copy-btn {
+      display: inline-block;
+      padding: 8px 12px; background: var(--brand);
+      color: white; border: none; border-radius: 5px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; margin-bottom: 16px;
+      transition: opacity 0.2s;
+    }
+    .copy-btn:hover { opacity: 0.85; }
+    .copy-btn.copied {
+      background: var(--done);
+    }
+
+    /* ── DEVIATION INPUT FORM ── */
+    .deviation-form {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-top: 16px;
+      padding: 16px; background: var(--dark-border);
+      border-radius: 5px;
+    }
+    @media (max-width: 768px) {
+      .deviation-form { grid-template-columns: 1fr; }
+    }
+    .form-input {
+      padding: 8px 10px; border: 1px solid var(--dark-border);
+      border-radius: 4px; font-size: 12px;
+      background: var(--dark-surface); color: var(--dark-text);
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--brand); }
+    .form-btn {
+      padding: 8px 12px; background: var(--brand);
+      color: white; border: none; border-radius: 4px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .form-btn:hover { opacity: 0.85; }
+
+    /* ── STATUS BADGES ── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 8px; border-radius: 12px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-open { background: var(--warn-bg); color: #7A4500; }
+    .badge-done { background: var(--done-bg); color: var(--done); }
+    .badge-blocked { background: var(--blocked-bg); color: var(--blocked); }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 48px; padding-top: 20px;
+      border-top: 1px solid var(--dark-border);
+      text-align: center; font-size: 11px;
+      color: var(--dark-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .top-nav { flex-direction: column; height: auto; gap: 8px; }
+      .nav-tabs { flex-wrap: wrap; width: 100%; }
+      .container { padding: 16px 12px; }
+      .page-title h1 { font-size: 20px; }
+      table { font-size: 12px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div class="nav-brand">
+    <span>🎯 Allergy Partners DC Hub</span>
+    <span class="status-badge-nav">IN PROGRESS</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="nav-tab" onclick="switchTab('timeline')">Timeline</button>
+    <button class="nav-tab" onclick="switchTab('checklist')">Checklist</button>
+    <button class="nav-tab" onclick="switchTab('playbook')">Playbook</button>
+    <button class="nav-tab" onclick="switchTab('deviations')">Deviations</button>
+    <button class="nav-tab" onclick="switchTab('release')">Release</button>
+  </div>
+</div>
+
+<!-- PROGRESS BAR (CHECKLIST ONLY) -->
+<div class="progress-wrap" id="progress-wrap" style="display: none;">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <span class="progress-label" id="progress-label">0 of 0 items complete</span>
+  <span class="progress-label" style="margin-left: 12px; color: var(--brand); font-weight: 700;" id="progress-pct">0%</span>
+</div>
+
+<!-- CONTAINER -->
+<div class="container">
+
+  <!-- TAB 1: OVERVIEW -->
+  <div class="tab-content active" id="overview">
+    <div class="page-title">
+      <h1>Overview</h1>
+      <p>Allergy Partners — Data Center Hub | 100 Technology Drive, Asheville NC 28803</p>
+    </div>
+
+    <!-- Site Info Card -->
+    <div class="card">
+      <div class="card-title">📍 Site Information</div>
+      <table>
+        <tr><td style="font-weight: 600;">Site</td><td>Allergy Partners — Data Center Hub</td></tr>
+        <tr><td style="font-weight: 600;">Address</td><td>100 Technology Drive, Asheville NC 28803</td></tr>
+        <tr><td style="font-weight: 600;">Install Date</td><td>Thursday, March 26, 2026 (Today)</td></tr>
+        <tr><td style="font-weight: 600;">Type</td><td>Data Center Hub (Wired Only — NO APs)</td></tr>
+        <tr><td style="font-weight: 600;">Target Completion</td><td>Tuesday, March 31, 2026</td></tr>
+      </table>
+    </div>
+
+    <!-- Team Card -->
+    <div class="card">
+      <div class="card-title">👥 Team</div>
+      <table>
+        <thead><tr><th>Role</th><th>Name</th><th>Contact</th></tr></thead>
+        <tbody>
+          <tr><td><strong>DE / JO</strong></td><td>Sudarsshan Krishna</td><td>—</td></tr>
+          <tr><td><strong>Tech (WWT)</strong></td><td>Donny Simuel</td><td>724-513-0310 / Simuel33@gmail.com</td></tr>
+          <tr><td><strong>Install PM (WWT)</strong></td><td>Bruce Potter</td><td>Remote</td></tr>
+          <tr><td><strong>Customer POC</strong></td><td>Parker Goldsborough</td><td>828-642-4201</td></tr>
+          <tr><td><strong>Customer POC</strong></td><td>Jesse</td><td>—</td></tr>
+          <tr><td><strong>Support DEs</strong></td><td>Alex La Fazia, Elvirlee</td><td>—</td></tr>
+          <tr><td><strong>Tech Ops</strong></td><td>Chris Thom</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Hardware Manifest Card -->
+    <div class="card">
+      <div class="card-title">🔧 Hardware Manifest</div>
+      <table>
+        <tbody>
+          <tr><td>2x Security Appliances (1G)</td><td>HA pair</td></tr>
+          <tr><td>6x Switches</td><td>4x 24-port, 2x 12-port</td></tr>
+          <tr><td>2x PDUs</td><td>Power distribution</td></tr>
+          <tr><td>4x 10G SM SFPs</td><td>Single-mode fiber transceivers</td></tr>
+          <tr><td>4x 1G Copper SFPs</td><td>Copper transceivers</td></tr>
+          <tr><td>5x 10G DAC Patch Cables</td><td>Direct-attach cables</td></tr>
+          <tr><td>1x MDF, 1x new 12U rack</td><td>Infrastructure</td></tr>
+          <tr><td><strong style="color: #ff6b6b;">❌ NO WAPs</strong></td><td>Wired-only data center</td></tr>
+          <tr><td><strong style="color: #ff6b6b;">❌ NO CAT6</strong></td><td>Not included in scope</td></tr>
+          <tr><td><strong style="color: #ff6b6b;">❌ NO Fiber runs</strong></td><td>Not included in scope</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Quick Links Card -->
+    <div class="card">
+      <div class="card-title">🔗 Quick Links</div>
+      <div class="quick-links">
+        <a href="https://dashboard.meter.com/network/019b476c-5347-fcbe-428e-8b7cdaff32bf" target="_blank" class="pill-btn">Dashboard</a>
+        <a href="https://meterup.slack.com/archives/C06ADV7RR6F/p1773183419423409" target="_blank" class="pill-btn">Slack Thread</a>
+        <a href="https://airtable.com/appBiFV0UMVIdMTg2/pagf5LPw0Ta4rOI60" target="_blank" class="pill-btn">Airtable</a>
+        <a href="https://docs.google.com/document/d/1qRd-QDxlAssaYd_TGzRhbWKC_z8FUaZ4ouRmUgZfeeo/edit" target="_blank" class="pill-btn">Work Order</a>
+        <a href="https://docs.google.com/spreadsheets/d/1PDZ31RjpjCYilEd9Tlp55orZBVCZwtLI1BYKdGLy4Yk/edit" target="_blank" class="pill-btn">Bid Sheet</a>
+        <a href="https://lucid.app/lucidchart/ee351c14-b387-408d-b42d-c4d526379db3/edit" target="_blank" class="pill-btn">Topology</a>
+        <a href="https://interval.meter.com/dashboard/meter/actions/equipment_orders/details?id=5313" target="_blank" class="pill-btn">EO-5313</a>
+        <a href="https://app.getguru.com/card/TpgbjX5c/Network-Validation" target="_blank" class="pill-btn">Validation Guide</a>
+        <a href="https://app.getguru.com/card/ioyLbbbT/Policy-Tech-Ops-Validation-Gate-for-Network-Activation" target="_blank" class="pill-btn">Validation Gate</a>
+      </div>
+    </div>
+
+    <!-- Alerts Card -->
+    <div class="card">
+      <div class="card-title">⚠️ Alerts & Notes</div>
+      <div class="alert-box blocked">
+        <div class="alert-title">🚨 BLOCKER — Single Static IP Risk</div>
+        <ul>
+          <li>One ISP may not have a second static IP — true HA may not be achievable.</li>
+          <li>Confirm ISP static details on-site with Parker or ISP tech.</li>
+          <li>If confirmed as single IP, document as deviation and test WAN0 failover only.</li>
+        </ul>
+      </div>
+      <div class="alert-box warn">
+        <div class="alert-title">⚠️ WARNING — Tight Rackspace</div>
+        <ul>
+          <li>Rackspace is tight. May need to rearrange existing gear.</li>
+          <li>Extra patch cables and power extensions are available in WWT tech kit.</li>
+          <li>Work with Donny and Parker to plan layout before rack & stack.</li>
+        </ul>
+      </div>
+      <div class="alert-box info">
+        <div class="alert-title">📌 INFO — NOT a Swap</div>
+        <ul>
+          <li>This is NOT a network replacement. Do NOT remove existing networking hardware.</li>
+          <li>Add Meter gear alongside existing infrastructure in the same MDF.</li>
+        </ul>
+      </div>
+      <div class="alert-box info">
+        <div class="alert-title">📌 INFO — ID & Escort Requirements</div>
+        <ul>
+          <li>Tech Donny must carry government-issued ID for MDF access.</li>
+          <li>Allergy Partners staff will escort tech to MDF. Do not go alone.</li>
+        </ul>
+      </div>
+      <div class="alert-box info">
+        <div class="alert-title">📌 INFO — Layer-7 DPI Gap</div>
+        <ul>
+          <li>BitTorrent blocking via Meraki L7 has no direct Meter equivalent (Linear DENG-253, backlog).</li>
+          <li>If customer asks about L7 filtering, escalate to Sudarsshan for workaround options.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 2: TIMELINE -->
+  <div class="tab-content" id="timeline">
+    <div class="page-title">
+      <h1>Timeline</h1>
+      <p>Installation Schedule — March 26, 2026 (ET)</p>
+    </div>
+
+    <div class="card">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-time">9:00 AM</div>
+          <div class="timeline-title">Tech Arrives</div>
+          <div class="timeline-details">Donny arrives on-site, meets POC Parker, joins Zoom bridge.</div>
+          <div class="timeline-who">Donny Simuel, Parker Goldsborough</div>
+        </div>
+
+        <div class="timeline-item highlight">
+          <div class="timeline-time">9:30 AM ⭐</div>
+          <div class="timeline-title">Working Session Starts</div>
+          <div class="timeline-details">Chris validates tech setup, device inventory, rack space assessment.</div>
+          <div class="timeline-who">Chris Thom, Donny Simuel</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">10:00 AM</div>
+          <div class="timeline-title">Rack & Stack Begins</div>
+          <div class="timeline-details">Tech begins mounting SAs, switches, PDUs per rack elevation.</div>
+          <div class="timeline-who">Donny Simuel</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">11:30 AM</div>
+          <div class="timeline-title">Firewall Power-Up</div>
+          <div class="timeline-details">Power up Meter firewall + connect ISPs. Chris + Sudarsshan validate.</div>
+          <div class="timeline-who">Chris Thom, Sudarsshan Krishna</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">12:00 PM</div>
+          <div class="timeline-title">Hub Integration Begins</div>
+          <div class="timeline-details">Connect to existing DC network. Transit VLAN setup.</div>
+          <div class="timeline-who">Alex La Fazia, Sudarsshan Krishna</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">2:00 PM</div>
+          <div class="timeline-title">Integration Complete (Target)</div>
+          <div class="timeline-details">All servers reachable, site-to-site plan documented.</div>
+          <div class="timeline-who">Chris Thom</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">2:00–5:00 PM</div>
+          <div class="timeline-title">Buffer / Troubleshooting</div>
+          <div class="timeline-details">Elvirlee + Sudarsshan on standby for support.</div>
+          <div class="timeline-who">Elvirlee, Sudarsshan Krishna</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">5:00 PM</div>
+          <div class="timeline-title">Target Completion</div>
+          <div class="timeline-details">Validation Release posted, JO notified. Dashboard marked Network Live.</div>
+          <div class="timeline-who">Chris Thom, Sudarsshan Krishna</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: CHECKLIST -->
+  <div class="tab-content" id="checklist">
+    <div class="page-title">
+      <h1>Installation Checklist</h1>
+      <p>10 Phases | Interactive Progress Tracking</p>
+    </div>
+
+    <!-- NOTES & BLOCKERS PANEL -->
+    <div class="notes-panel" id="notes-panel">
+      <div class="notes-panel-header" onclick="toggleNotesPanel()">
+        <span class="notes-panel-title">📝 Notes &amp; Blockers</span>
+        <span style="display:flex;align-items:center;gap:10px;">
+          <span class="notes-save-indicator" id="notes-saved">✓ Saved</span>
+          <span class="panel-chevron">▾</span>
+        </span>
+      </div>
+      <div class="notes-panel-body">
+        <div>
+          <div class="blockers-title">🚧 Active Blockers</div>
+          <div class="blocker-list" id="blocker-list">
+            <div class="blocker-empty" id="blocker-empty">No blockers added yet.</div>
+          </div>
+          <div class="add-blocker-row">
+            <input class="add-blocker-input" id="blocker-input"
+              type="text" placeholder="Describe a blocker..."
+              onkeydown="if(event.key==='Enter') addBlocker()" />
+            <button class="add-blocker-btn" onclick="addBlocker()">+ Add Blocker</button>
+          </div>
+        </div>
+        <div>
+          <div class="notes-title">📋 Field Notes</div>
+          <textarea class="notes-textarea" id="site-notes"
+            placeholder="Add notes, reminders, config details, or anything to remember for this site..."
+            oninput="saveNotes()"></textarea>
+          <div class="notes-meta" id="notes-meta">Notes auto-save as you type.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT BOXES -->
+    <div class="alert-box warn">
+      <div class="alert-title">⚠️ Remember: Wired-Only Data Center</div>
+      <ul>
+        <li>No WAPs, no wireless clients. Skip all WiFi-related items (marked as N/A).</li>
+        <li>Focus on physical cabling, firewall HA, ISP validation, and core network bring-up.</li>
+      </ul>
+    </div>
+
+    <!-- PHASE 0 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 0 — Pre-Install Preparation</div>
+
+      <div class="section-card" id="s-0">
+        <div class="section-header info-section" onclick="toggleSection('s-0')">
+          <span class="section-title">🔐 Pre-Install Tasks</span>
+          <span>
+            <span class="section-badge" id="badge-s-0">0/7</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-0-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Review WO, topology, and patching instructions before Zoom call</div>
+          </div>
+          <div class="check-item" data-id="c-0-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm Zoom bridge is set up and all participants have link</div>
+          </div>
+          <div class="check-item" data-id="c-0-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm on-site POC Parker Goldsborough (828-642-4201) is available</div>
+          </div>
+          <div class="check-item" data-id="c-0-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Verify tech Donny Simuel has government-issued ID for MDF access</div>
+          </div>
+          <div class="check-item" data-id="c-0-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm tech has access to CompanyCam project</div>
+          </div>
+          <div class="check-item" data-id="c-0-6" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Verify equipment inventory against WO packing list (2x SA, 6x switches, 2x PDUs, SFPs, DACs)</div>
+          </div>
+          <div class="check-item" data-id="c-0-7" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Assess rackspace — plan layout with tech (rackspace is tight, may need rearranging)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 1 — Physical Installation (Rack & Stack)</div>
+
+      <div class="section-card" id="s-1">
+        <div class="section-header phase1" onclick="toggleSection('s-1')">
+          <span class="section-title">📦 Rack & Stack</span>
+          <span>
+            <span class="section-badge" id="badge-s-1">0/9</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-1-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Tech arrives on-site, meets POC, escorted to MDF</div>
+          </div>
+          <div class="check-item" data-id="c-1-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Unpack and label all Meter equipment per box labels</div>
+          </div>
+          <div class="check-item" data-id="c-1-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Assess rack space — determine layout per rack elevation (may need rearranging)</div>
+          </div>
+          <div class="check-item" data-id="c-1-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Mount 2x Security Appliances with rack mounts</div>
+          </div>
+          <div class="check-item" data-id="c-1-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Mount 6x Switches (4x 24-port, 2x 12-port) per rack elevation</div>
+          </div>
+          <div class="check-item" data-id="c-1-6" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Mount 2x PDUs per power outlet instructions</div>
+          </div>
+          <div class="check-item" data-id="c-1-7" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Install 12U rack if needed</div>
+          </div>
+          <div class="check-item" data-id="c-1-8" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Label all devices with legible stickers</div>
+          </div>
+          <div class="check-item" data-id="c-1-9" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Connect patch cables per patching instructions (note: Do NOT remove existing HW)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 2 — HA Bootstrap (ISP Switch Config Download)</div>
+
+      <div class="section-card" id="s-2">
+        <div class="section-header phase2" onclick="toggleSection('s-2')">
+          <span class="section-title">🔄 HA Bootstrap</span>
+          <span>
+            <span class="section-badge" id="badge-s-2">0/4</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-2-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Plug Primary ISP to Primary Firewall, Port 4
+              <div class="check-note">Temporary patching per WO HA Instructions</div>
+            </div>
+          </div>
+          <div class="check-item" data-id="c-2-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Plug MDF-ISP01, Port 28 to Primary Firewall, Port 5
+              <div class="check-note">Temporary patching per WO HA Instructions</div>
+            </div>
+          </div>
+          <div class="check-item" data-id="c-2-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Plug MDF-ISP02, Port 4 to Primary Firewall, Port 7
+              <div class="check-note">Temporary patching per WO HA Instructions</div>
+            </div>
+          </div>
+          <div class="check-item" data-id="c-2-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm ISP switches download configs from Meter cloud (check Dashboard)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 3 — ISP & WAN Validation</div>
+
+      <div class="section-card" id="s-3">
+        <div class="section-header phase3" onclick="toggleSection('s-3')">
+          <span class="section-title">🌐 ISP Patching & Validation</span>
+          <span>
+            <span class="section-badge" id="badge-s-3">0/10</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-3-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP01 Port 2 ↔ Primary Firewall WAN0</div>
+          </div>
+          <div class="check-item" data-id="c-3-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP01 Port 3 ↔ Backup Firewall WAN0</div>
+          </div>
+          <div class="check-item" data-id="c-3-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP01 Port 4 ↔ MDF-A01 Port 23</div>
+          </div>
+          <div class="check-item" data-id="c-3-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP01 Port 25 ↔ Primary ISP LAN0</div>
+          </div>
+          <div class="check-item" data-id="c-3-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP02 Port 2 ↔ Primary Firewall WAN1</div>
+          </div>
+          <div class="check-item" data-id="c-3-6" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP02 Port 3 ↔ Backup Firewall WAN1</div>
+          </div>
+          <div class="check-item" data-id="c-3-7" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP02 Port 4 ↔ MDF-A02 Port 23</div>
+          </div>
+          <div class="check-item" data-id="c-3-8" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">MDF-ISP02 Port 25 ↔ Secondary ISP LAN0</div>
+          </div>
+          <div class="check-item" data-id="c-3-9" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm Primary ISP (WAN0) quality 100% in Dashboard</div>
+          </div>
+          <div class="check-item" data-id="c-3-10" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm Secondary ISP (WAN1) quality 100%
+              <div class="check-note">⚠️ May lack second static IP — document as deviation if confirmed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 4 — Core Network Bring-Up</div>
+
+      <div class="section-card" id="s-4">
+        <div class="section-header phase4" onclick="toggleSection('s-4')">
+          <span class="section-title">🔌 Network Bring-Up</span>
+          <span>
+            <span class="section-badge" id="badge-s-4">0/11</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-4-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">All 2x Security Appliances online in Dashboard</div>
+          </div>
+          <div class="check-item" data-id="c-4-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">All 6x Switches online in Dashboard</div>
+          </div>
+          <div class="check-item" data-id="c-4-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">All 2x PDUs online in Dashboard</div>
+          </div>
+          <div class="check-item" data-id="c-4-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Dashboard Issues page shows no unexpected errors</div>
+          </div>
+          <div class="check-item" data-id="c-4-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">NOS version confirmed as latest GA on all devices</div>
+          </div>
+          <div class="check-item" data-id="c-4-6" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Switch auto-config complete — VLANs applied</div>
+          </div>
+          <div class="check-item" data-id="c-4-7" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Core switches MDF-C01 and MDF-C02 online and configured</div>
+          </div>
+          <div class="check-item" data-id="c-4-8" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Access switches MDF-A01 and MDF-A02 online</div>
+          </div>
+          <div class="check-item" data-id="c-4-9" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">ISP switches MDF-ISP01 and MDF-ISP02 online</div>
+          </div>
+          <div class="check-item" data-id="c-4-10" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Switch patching matches topology diagram</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 5 — Hub Network Integration</div>
+
+      <div class="section-card" id="s-5">
+        <div class="section-header info-section" onclick="toggleSection('s-5')">
+          <span class="section-title">🔗 Integration</span>
+          <span>
+            <span class="section-badge" id="badge-s-5">0/5</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-5-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Create transit VLAN between Meter network and existing DC network</div>
+          </div>
+          <div class="check-item" data-id="c-5-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Establish physical connection to existing data center hub network</div>
+          </div>
+          <div class="check-item" data-id="c-5-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Verify downstream servers and their IP addresses</div>
+          </div>
+          <div class="check-item" data-id="c-5-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Confirm site-to-site reachability plan for spoke (Clyde, NC — March 30)</div>
+          </div>
+          <div class="check-item" data-id="c-5-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Test connectivity to existing infrastructure from Meter network</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 6 — HA & PDU Validation</div>
+
+      <div class="section-card" id="s-6">
+        <div class="section-header phase1" onclick="toggleSection('s-6')">
+          <span class="section-title">⚡ HA Failover Test</span>
+          <span>
+            <span class="section-badge" id="badge-s-6">0/4</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-6-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Primary and Backup SAs both visible in Dashboard</div>
+          </div>
+          <div class="check-item" data-id="c-6-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">HA status: Primary SA is Active</div>
+          </div>
+          <div class="check-item" data-id="c-6-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">PDU outlets labeled with correct device names per WO</div>
+          </div>
+          <div class="check-item" data-id="c-6-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">PDU validation test: power-cycle Primary SA → Backup takes over within 15s → Primary recovers and resumes Active role</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 7 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 7 — Speed & Connectivity Tests</div>
+
+      <div class="section-card" id="s-7">
+        <div class="section-header phase2" onclick="toggleSection('s-7')">
+          <span class="section-title">📊 Performance Tests</span>
+          <span>
+            <span class="section-badge" id="badge-s-7">0/5</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-7-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Run Dashboard Speed Test — verify against ISP circuit specs</div>
+          </div>
+          <div class="check-item" data-id="c-7-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Run Ping Test — success rate 100%</div>
+          </div>
+          <div class="check-item" data-id="c-7-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Run speed test from client device via speedtest.meter.network</div>
+          </div>
+          <div class="check-item na" data-id="c-7-4">
+            <div class="check-box">—</div>
+            <div class="check-label">Guest WiFi test
+              <div class="check-note">N/A — Wired-only data center, no WAPs</div>
+            </div>
+          </div>
+          <div class="check-item na" data-id="c-7-5">
+            <div class="check-box">—</div>
+            <div class="check-label">Wireless Health check
+              <div class="check-note">N/A — Wired-only data center</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 8 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 8 — Documentation & Closeout</div>
+
+      <div class="section-card" id="s-8">
+        <div class="section-header phase3" onclick="toggleSection('s-8')">
+          <span class="section-title">📸 Documentation</span>
+          <span>
+            <span class="section-badge" id="badge-s-8">0/8</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-8-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">CompanyCam daily progress notes submitted</div>
+          </div>
+          <div class="check-item" data-id="c-8-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Rack and stack photos uploaded to CompanyCam</div>
+          </div>
+          <div class="check-item" data-id="c-8-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">ISP handoff photos uploaded</div>
+          </div>
+          <div class="check-item" data-id="c-8-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Patching photos uploaded (all switch connections)</div>
+          </div>
+          <div class="check-item" data-id="c-8-5" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">PDU photos uploaded (all outlets labeled)</div>
+          </div>
+          <div class="check-item" data-id="c-8-6" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Speed test screenshots uploaded</div>
+          </div>
+          <div class="check-item" data-id="c-8-7" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Physical deployment quality validated</div>
+          </div>
+          <div class="check-item" data-id="c-8-8" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Airtable record updated with closeout document and photos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 9 -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--dark-muted); margin-bottom: 12px; letter-spacing: 0.5px;">Phase 9 — Validation Release & Go-Live</div>
+
+      <div class="section-card" id="s-9">
+        <div class="section-header phase4" onclick="toggleSection('s-9')">
+          <span class="section-title">🚀 Release & Activation</span>
+          <span>
+            <span class="section-badge" id="badge-s-9">0/4</span>
+            <span class="section-chevron">▾</span>
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="check-item" data-id="c-9-1" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">All validation steps confirmed passed (by DE / Tech Ops lead)
+              <div class="check-note">Per Validation Gate Policy (effective March 4, 2026)</div>
+            </div>
+          </div>
+          <div class="check-item" data-id="c-9-2" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Any deviations documented in #deployments thread, JO notified</div>
+          </div>
+          <div class="check-item" data-id="c-9-3" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Post Tech Ops Validation Release in #deployments thread</div>
+          </div>
+          <div class="check-item" data-id="c-9-4" onclick="toggle(this)">
+            <div class="check-box"></div>
+            <div class="check-label">Notify JO (Sudarsshan) to mark network live in Dashboard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 4: PLAYBOOK -->
+  <div class="tab-content" id="playbook">
+    <div class="page-title">
+      <h1>Playbook</h1>
+      <p>Chris's Self-Serve Runbook for Phases 5–7</p>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="card">
+      <div class="card-title">Phase 5 — Hub Network Integration</div>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">5.1 — Prepare the Transit VLAN</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Open Meter Dashboard → VLANs. Confirm what VLANs exist from auto-config.</li>
+        <li>Look for the transit VLAN. If Sudarsshan/Alex pre-configured it, it's already there. If not, note what ID they want — don't create it yourself.</li>
+        <li>Ask Parker or Jesse: <strong>"Which port on your existing switch will we use for the uplink to Meter?"</strong> Write down: port number, switch name, current VLAN assignment.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">5.2 — Make the Physical Connection</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Patch cable from agreed port on existing DC switch → designated port on Meter core switch (likely MDF-C01 or MDF-C02 — check topology).</li>
+        <li>Confirm port comes up with link on both sides. Dashboard → switch port status → should show connected.</li>
+        <li>Verify port config on Meter side (trunk or access on transit VLAN). If not configured, tag Sudarsshan rather than changing it yourself.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">5.3 — Verify Downstream Servers</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Get server list from Parker/Jesse: server name, IP, VLAN, function.</li>
+        <li>From a device on the Meter network, ping each server IP. Record results:</li>
+      </ol>
+
+      <div class="code-block">
+Server: __________ | IP: __________ | Ping: ☐ Pass  ☐ Fail<br>
+Server: __________ | IP: __________ | Ping: ☐ Pass  ☐ Fail<br>
+Server: __________ | IP: __________ | Ping: ☐ Pass  ☐ Fail
+      </div>
+
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;" start="3">
+        <li>If pings fail, check these three things before escalating:<br>
+          (a) Is the transit VLAN port actually up on both sides?<br>
+          (b) Is there a route on the Meter firewall for the server subnet?<br>
+          (c) Is there a route on the existing DC side pointing back to the Meter transit IP?<br>
+          If all three look right and it still fails → escalate to Sudarsshan.
+        </li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">5.4 — Document Site-to-Site Readiness for Clyde</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Write down the Meter hub-side subnet (transit VLAN subnet or server VLAN).</li>
+        <li>Note for Sudarsshan what the return route from existing network to the spoke will look like. Drop it in #deployments thread.</li>
+      </ol>
+
+      <div class="alert-box blocked">
+        <div class="alert-title">🚨 ESCALATE IF:</div>
+        <ul>
+          <li>Transit VLAN doesn't exist in Dashboard</li>
+          <li>Pings fail after checking items (a)(b)(c)</li>
+          <li>Parker/Jesse can't identify server IPs</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="card">
+      <div class="card-title">Phase 6 — HA & PDU Validation</div>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">6.1 — Confirm HA Status</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Dashboard → Security Appliances. Confirm both Primary and Backup SA listed.</li>
+        <li>Check HA status: Primary = "Active", Backup = "Standby"/"Passive".</li>
+        <li>If both show Active, or both show Standby → screenshot and tag Sudarsshan immediately. Do not proceed.</li>
+        <li>If only one SA appears → check power and cabling. If powered and cabled correctly but not showing → escalate.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">6.2 — Label PDU Outlets</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>At the rack, compare each PDU outlet to the WO power outlet diagram.</li>
+        <li>Every outlet labeled with device it powers (e.g., "Outlet 1 — Primary SA").</li>
+        <li>If labels missing → have Donny label now. Photo for CompanyCam.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">6.3 — Run the Failover Test</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Open Dashboard → Security Appliances page (watch status in real time).</li>
+        <li>On PDU #1, power off the outlet for the <strong>Primary SA</strong>. Start timer.</li>
+        <li>Watch Dashboard → Backup SA should transition to Active within ~15 seconds.
+          <ul style="margin: 8px 0 0 20px;">
+            <li>If no flip within 30 seconds → power Primary back on → escalate.</li>
+          </ul>
+        </li>
+        <li>With Backup Active, ping downstream servers from Phase 5. Connectivity should hold.</li>
+        <li>Leave Primary off ~2 minutes, then power back on.</li>
+        <li>Watch Dashboard → Primary comes back online, resumes Active role (2–3 min).</li>
+        <li>Ping again to confirm stability after failback.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">6.4 — If HA Is Limited (Single Static IP)</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Still run failover test on the working WAN link.</li>
+        <li>Document: <strong>"WAN1 not configured for HA — single static IP only. Failover tested on WAN0 only."</strong></li>
+        <li>Post in #deployments as deviation.</li>
+      </ol>
+
+      <div class="alert-box blocked">
+        <div class="alert-title">🚨 ESCALATE IF:</div>
+        <ul>
+          <li>Both SAs show same HA state</li>
+          <li>Backup doesn't take over within 30s</li>
+          <li>Primary doesn't resume Active after reboot</li>
+          <li>Connectivity drops during failover</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PHASE 7 -->
+    <div class="card">
+      <div class="card-title">Phase 7 — Speed & Connectivity Tests</div>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">7.1 — Dashboard Speed Test</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Dashboard → ISP/WAN page → Run speed test.</li>
+        <li>Compare to ISP circuit specs (check WO ISP Details section or ask Sudarsshan).</li>
+        <li>Results should be ~80–90% of rated speed.
+          <ul style="margin: 8px 0 0 20px;">
+            <li>If getting <50% of rated → check SFP type, cable, port speed negotiation before escalating.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">7.2 — Dashboard Ping Test</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Run ping test. Need <strong>100% success rate</strong>.</li>
+        <li>If packet loss → run again (rule out transient).</li>
+        <li>If persistent loss → check WAN quality in Dashboard.
+          <ul style="margin: 8px 0 0 20px;">
+            <li>WAN quality degraded → ISP-side issue</li>
+            <li>WAN quality fine but ping fails → escalate</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">7.3 — Client Speed Test</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Connect laptop to Meter network via Ethernet.</li>
+        <li>Browser → <strong>speedtest.meter.network</strong> → Run test.</li>
+        <li>Screenshot results (confirm showing wired connection, not LTE).</li>
+        <li>Upload screenshot to CompanyCam.</li>
+      </ol>
+
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--dark-text); margin: 20px 0 12px 0;">7.4 — N/A Items</h3>
+      <ol style="margin: 0 0 16px 20px; line-height: 1.8;">
+        <li>Skip and note as N/A: Guest WiFi, Wireless Health, ACS (no WAPs at this site).</li>
+      </ol>
+
+      <div class="alert-box blocked">
+        <div class="alert-title">🚨 ESCALATE IF:</div>
+        <ul>
+          <li>Speed <80% of rated after checking SFP/cable/port</li>
+          <li>Persistent ping packet loss</li>
+          <li>WAN quality below 100% in Dashboard</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 5: DEVIATIONS -->
+  <div class="tab-content" id="deviations">
+    <div class="page-title">
+      <h1>Deviations</h1>
+      <p>Track issues, constraints, and scope changes</p>
+    </div>
+
+    <div class="card">
+      <table id="deviations-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Deviation</th>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Resolution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>Single Static IP on ISP</strong></td>
+            <td>True HA may not be achievable if second ISP lacks static IP</td>
+            <td><span class="status-badge badge-open">⚠ Open</span></td>
+            <td><span style="color: var(--dark-muted);">Confirm on-site</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Rackspace Constraints</strong></td>
+            <td>Existing rack tight — may require rearranging gear</td>
+            <td><span class="status-badge badge-open">⚠ Open</span></td>
+            <td><span style="color: var(--dark-muted);">Assess on-site</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>Layer-7 DPI Gap</strong></td>
+            <td>BitTorrent blocking via Meraki L7 has no Meter equivalent (DENG-253)</td>
+            <td><span class="status-badge badge-done">📋 Known Gap</span></td>
+            <td><span style="color: var(--dark-muted);">Backlog</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="deviation-form">
+        <input type="text" class="form-input" id="dev-title" placeholder="Deviation Title">
+        <input type="text" class="form-input" id="dev-details" placeholder="Details">
+        <button class="form-btn" onclick="addDeviation()">+ Add Deviation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: RELEASE -->
+  <div class="tab-content" id="release">
+    <div class="page-title">
+      <h1>Validation Release</h1>
+      <p>Ready-to-copy Tech Ops Release Template</p>
+    </div>
+
+    <div class="card">
+      <div class="code-label">Template — Copy & Paste to #deployments</div>
+      <button class="copy-btn" onclick="copyReleaseTemplate()">📋 Copy to Clipboard</button>
+      <div class="code-block" id="release-template">
+🎯 Tech Ops Validation Release — Allergy Partners (Data Center Hub)
+
+📍 100 Technology Drive, Asheville NC 28803
+🔗 Dashboard: https://dashboard.meter.com/network/019b476c-5347-fcbe-428e-8b7cdaff32bf
+
+✅ Dashboard Issues page clear
+✅ All Meter hardware online (2x SA, 6x switches, 2x PDUs) — serials match Dashboard
+✅ NOS version current GA
+✅ ISP patched to correct WAN ports per WO; ISP quality confirmed
+✅ Switch patching matches topology
+✅ PDU outlets labeled; power-cycle validation completed
+✅ Dashboard speed test verified against ISP specs
+✅ Ping test 100% success
+✅ Transit VLAN established — connectivity to existing DC network confirmed
+✅ HA validated — failover test passed
+
+📋 Deviations: [None / List any]
+📸 CompanyCam: Complete
+📝 Closeout documentation uploaded to Airtable
+
+@Sudarsshan Krishna — Ready for network activation.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Next Steps</div>
+      <ol style="line-height: 2; margin-left: 20px;">
+        <li>Copy the template above (click the Copy button)</li>
+        <li>Go to the #deployments Slack thread</li>
+        <li>Paste and edit — fill in deviations if any, adjust any ✅ to ⚠️ if items had issues</li>
+        <li>Tag @Sudarsshan Krishna</li>
+        <li>Update Airtable record status to "Pending Activation"</li>
+        <li>Confirm Dashboard is marked Network Live</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    Generated for Chris Thom | Allergy Partners DC Hub | March 26, 2026
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'allergy_partners_dc_hub_dashboard_v1';
+
+  // ── TAB SWITCHING ──
+  function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    // Deactivate all nav buttons
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    // Show selected tab
+    document.getElementById(tabName).classList.add('active');
+    // Activate button
+    event.target.classList.add('active');
+    // Update URL hash
+    window.location.hash = tabName;
+    // Show/hide progress bar
+    if (tabName === 'checklist') {
+      document.getElementById('progress-wrap').style.display = 'flex';
+    } else {
+      document.getElementById('progress-wrap').style.display = 'none';
+    }
+  }
+
+  // Handle URL hash on load
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.slice(1) || 'overview';
+    const btn = document.querySelector(`[onclick="switchTab('${hash}')"]`);
+    if (btn) btn.click();
+  });
+
+  // ── CHECKLIST STATE MANAGEMENT ──
+  function getState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function toggle(el) {
+    if (el.classList.contains('blocked') || el.classList.contains('na')) return;
+    const id = el.dataset.id;
+    const state = getState();
+    const isDone = el.classList.contains('done');
+    if (isDone) {
+      el.classList.remove('done');
+      el.querySelector('.check-box').textContent = '';
+      state[id] = false;
+    } else {
+      el.classList.add('done');
+      el.querySelector('.check-box').textContent = '✓';
+      state[id] = true;
+    }
+    saveState(state);
+    updateProgress();
+  }
+
+  function toggleSection(id) {
+    document.getElementById(id).classList.toggle('section-collapsed');
+  }
+
+  function updateProgress() {
+    const allCheckable = document.querySelectorAll('.check-item[onclick]');
+    const done = document.querySelectorAll('.check-item.done');
+    const total = allCheckable.length;
+    const completed = done.length;
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    document.getElementById('progress-label').textContent = `${completed} of ${total} items complete`;
+    document.getElementById('progress-pct').textContent = `${pct}%`;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.querySelectorAll('.section-card').forEach(card => {
+      const badge = document.getElementById('badge-' + card.id);
+      if (!badge) return;
+      const items = card.querySelectorAll('.check-item[onclick]');
+      const doneItems = card.querySelectorAll('.check-item.done');
+      badge.textContent = `${doneItems.length}/${items.length}`;
+    });
+  }
+
+  // ── NOTES & BLOCKERS ──
+  let blockers = [];
+  let notesTimeout = null;
+
+  function loadNotesPanel() {
+    const raw = localStorage.getItem(STORAGE_KEY + '_notes');
+    if (raw) {
+      try {
+        const data = JSON.parse(raw);
+        blockers = data.blockers || [];
+        document.getElementById('site-notes').value = data.notes || '';
+      } catch(e) {}
+    }
+    renderBlockers();
+  }
+
+  function saveNotesPanel() {
+    const data = {
+      blockers,
+      notes: document.getElementById('site-notes').value
+    };
+    localStorage.setItem(STORAGE_KEY + '_notes', JSON.stringify(data));
+    const ind = document.getElementById('notes-saved');
+    ind.classList.add('visible');
+    clearTimeout(notesTimeout);
+    notesTimeout = setTimeout(() => ind.classList.remove('visible'), 1800);
+  }
+
+  function saveNotes() { saveNotesPanel(); }
+
+  function addBlocker() {
+    const input = document.getElementById('blocker-input');
+    const text = input.value.trim();
+    if (!text) return;
+    blockers.push({ id: Date.now(), text, resolved: false });
+    input.value = '';
+    renderBlockers();
+    saveNotesPanel();
+  }
+
+  function resolveBlocker(id) {
+    const b = blockers.find(x => x.id === id);
+    if (b) b.resolved = !b.resolved;
+    renderBlockers();
+    saveNotesPanel();
+  }
+
+  function removeBlocker(id) {
+    blockers = blockers.filter(x => x.id !== id);
+    renderBlockers();
+    saveNotesPanel();
+  }
+
+  function renderBlockers() {
+    const list = document.getElementById('blocker-list');
+    const empty = document.getElementById('blocker-empty');
+    list.innerHTML = '';
+    if (blockers.length === 0) {
+      const emptyEl = document.createElement('div');
+      emptyEl.className = 'blocker-empty';
+      emptyEl.textContent = 'No blockers added yet.';
+      list.appendChild(emptyEl);
+      return;
+    }
+    blockers.forEach(b => {
+      const el = document.createElement('div');
+      el.className = 'blocker-item' + (b.resolved ? ' resolved' : '');
+      el.innerHTML = `
+        <span class="blocker-item-text">${b.text}</span>
+        <span class="blocker-item-actions">
+          <button class="blocker-btn resolve ${b.resolved ? 'undo' : ''}"
+            onclick="resolveBlocker(${b.id})">${b.resolved ? 'Reopen' : 'Resolve'}</button>
+          <button class="blocker-btn remove" onclick="removeBlocker(${b.id})" title="Remove">✕</button>
+        </span>`;
+      list.appendChild(el);
+    });
+  }
+
+  function toggleNotesPanel() {
+    document.getElementById('notes-panel').classList.toggle('collapsed');
+  }
+
+  // ── DEVIATIONS TABLE ──
+  function loadDeviations() {
+    const raw = localStorage.getItem(STORAGE_KEY + '_deviations');
+    if (raw) {
+      try {
+        const deviations = JSON.parse(raw);
+        deviations.forEach(dev => {
+          const table = document.getElementById('deviations-table');
+          const row = table.insertRow();
+          row.innerHTML = `
+            <td>${dev.id}</td>
+            <td><strong>${dev.title}</strong></td>
+            <td>${dev.details}</td>
+            <td><span class="status-badge badge-open">⚠ Open</span></td>
+            <td><span style="color: var(--dark-muted);">—</span></td>
+          `;
+        });
+      } catch(e) {}
+    }
+  }
+
+  function addDeviation() {
+    const title = document.getElementById('dev-title').value.trim();
+    const details = document.getElementById('dev-details').value.trim();
+    if (!title || !details) return;
+
+    const table = document.getElementById('deviations-table');
+    const rowCount = table.rows.length;
+    const id = rowCount; // Simple ID based on row count
+
+    const row = table.insertRow();
+    row.innerHTML = `
+      <td>${id}</td>
+      <td><strong>${title}</strong></td>
+      <td>${details}</td>
+      <td><span class="status-badge badge-open">⚠ Open</span></td>
+      <td><span style="color: var(--dark-muted);">—</span></td>
+    `;
+
+    // Save to localStorage
+    const raw = localStorage.getItem(STORAGE_KEY + '_deviations');
+    let deviations = [];
+    try { deviations = JSON.parse(raw) || []; } catch(e) {}
+    deviations.push({ id, title, details });
+    localStorage.setItem(STORAGE_KEY + '_deviations', JSON.stringify(deviations));
+
+    document.getElementById('dev-title').value = '';
+    document.getElementById('dev-details').value = '';
+  }
+
+  // ── RELEASE TEMPLATE COPY ──
+  function copyReleaseTemplate() {
+    const template = document.getElementById('release-template').textContent;
+    navigator.clipboard.writeText(template).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  }
+
+  // ── INIT ──
+  (function init() {
+    const state = getState();
+    document.querySelectorAll('.check-item[onclick]').forEach(el => {
+      if (state[el.dataset.id] === true) {
+        el.classList.add('done');
+        el.querySelector('.check-box').textContent = '✓';
+      }
+    });
+    loadNotesPanel();
+    loadDeviations();
+    updateProgress();
+
+    // Handle hash on load
+    const hash = window.location.hash.slice(1) || 'overview';
+    const btn = document.querySelector(`[onclick="switchTab('${hash}')"]`);
+    if (btn) btn.click();
+  })();
+</script>
+
+</body>
+</html>
